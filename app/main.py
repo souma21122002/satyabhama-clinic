@@ -235,8 +235,21 @@ def doctor_dashboard():
     if "user" not in session or session["user"]["role"] != "doctor":
         flash("Please login as doctor", "warning")
         return redirect(url_for("doctor_login"))
+    
     consultations = load_consultations()
-    return render_template("doctor/dashboard.html", consultations=consultations)
+    
+    # Count pending and replied
+    pending_count = len([c for c in consultations if c.get('status') == 'pending'])
+    replied_count = len([c for c in consultations if c.get('status') == 'replied'])
+    pending_consultations = [c for c in consultations if c.get('status') == 'pending']
+    
+    return render_template(
+        "doctor/dashboard.html", 
+        consultations=consultations,
+        pending_consultations=pending_consultations,
+        pending_count=pending_count,
+        replied_count=replied_count
+    )
 
 @app.route("/doctor/reply/<int:consultation_id>", methods=["GET", "POST"])
 def doctor_reply(consultation_id):

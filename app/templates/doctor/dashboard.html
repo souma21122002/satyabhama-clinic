@@ -20,13 +20,13 @@
         </div>
         <div class="col-md-3">
             <div class="card p-4 text-center" style="background: #ff9800; color: white;">
-                <h3>{{ consultations|selectattr('status', 'equalto', 'pending')|list|length }}</h3>
+                <h3>{{ pending_count }}</h3>
                 <p class="mb-0">Pending</p>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card p-4 text-center" style="background: #4caf50; color: white;">
-                <h3>{{ consultations|selectattr('status', 'equalto', 'replied')|list|length }}</h3>
+                <h3>{{ replied_count }}</h3>
                 <p class="mb-0">Replied</p>
             </div>
         </div>
@@ -40,45 +40,48 @@
     
     <h3 class="mb-4">📋 Pending Consultations</h3>
     
-    {% set pending = consultations|selectattr('status', 'equalto', 'pending')|list %}
-    {% if pending %}
-        {% for c in pending %}
+    {% if pending_consultations %}
+        {% for c in pending_consultations %}
         <div class="card mb-4 p-4" style="border-left: 5px solid #ff9800;">
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>
                     <span class="badge bg-warning text-dark mb-2">PENDING</span>
                     <h5 class="mb-1">{{ c.patient_name }}</h5>
-                    <small class="text-muted">{{ c.created_at }} | Severity: <strong>{{ c.severity }}</strong></small>
+                    <small class="text-muted">{{ c.created_at }} | {{ c.severity }}</small>
                 </div>
                 <a href="/doctor/reply/{{ c.id }}" class="btn btn-primary">
                     <i class="bi bi-reply"></i> Reply
                 </a>
             </div>
             
-            <p><strong>Symptoms:</strong> {{ c.symptoms[:300] }}{% if c.symptoms|length > 300 %}...{% endif %}</p>
+            <p><strong>Symptoms:</strong> {{ c.symptoms[:200] }}{% if c.symptoms|length > 200 %}...{% endif %}</p>
             
-            <!-- Media Preview -->
-            <div class="row mt-3">
+            <div class="row">
+                <!-- Voice Recording -->
                 {% if c.voice_record %}
-                <div class="col-md-6">
+                <div class="col-md-6 mb-3">
                     <div class="bg-light p-3 rounded">
-                        <strong><i class="bi bi-mic-fill text-danger"></i> Voice:</strong>
-                        <audio controls preload="metadata" class="w-100 mt-2">
+                        <h6><i class="bi bi-mic-fill text-danger"></i> Voice Recording</h6>
+                        <audio controls preload="auto" class="w-100 mt-2" style="height: 40px;">
                             <source src="/uploads/{{ c.voice_record }}" type="audio/webm">
                             <source src="/uploads/{{ c.voice_record }}" type="audio/mpeg">
+                            <source src="/uploads/{{ c.voice_record }}" type="audio/wav">
+                            Your browser does not support audio playback.
                         </audio>
                     </div>
                 </div>
                 {% endif %}
                 
+                <!-- Images -->
                 {% if c.images and c.images|length > 0 %}
-                <div class="col-md-6">
+                <div class="col-md-6 mb-3">
                     <div class="bg-light p-3 rounded">
-                        <strong><i class="bi bi-images text-primary"></i> Images ({{ c.images|length }}):</strong>
+                        <h6><i class="bi bi-images text-primary"></i> Images ({{ c.images|length }})</h6>
                         <div class="d-flex gap-2 mt-2 flex-wrap">
                             {% for img in c.images %}
                             <a href="/uploads/{{ img }}" target="_blank">
-                                <img src="/uploads/{{ img }}" class="img-thumbnail-custom" alt="Image">
+                                <img src="/uploads/{{ img }}" 
+                                     style="height: 60px; width: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;">
                             </a>
                             {% endfor %}
                         </div>
@@ -89,33 +92,9 @@
         </div>
         {% endfor %}
     {% else %}
-        <div class="card p-5 text-center">
-            <div class="display-1">🎉</div>
-            <p class="text-muted mb-0 mt-3">No pending consultations!</p>
-        </div>
-    {% endif %}
-    
-    <hr class="my-5">
-    
-    <h3 class="mb-4 text-success">✅ Replied Consultations</h3>
-    {% set replied = consultations|selectattr('status', 'equalto', 'replied')|list %}
-    {% if replied %}
-        {% for c in replied %}
-        <div class="card mb-3 p-3" style="border-left: 5px solid #4caf50;">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-0">{{ c.patient_name }}</h6>
-                    <small class="text-muted">{{ c.created_at }}</small>
-                </div>
-                <div>
-                    <span class="badge bg-success">Replied</span>
-                    <a href="/doctor/reply/{{ c.id }}" class="btn btn-sm btn-outline-primary ms-2">View</a>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    {% else %}
-        <p class="text-muted">No replied consultations yet.</p>
+    <div class="card p-5 text-center">
+        <p class="text-muted mb-0">No pending consultations 🎉</p>
+    </div>
     {% endif %}
 </div>
 {% endblock %}
