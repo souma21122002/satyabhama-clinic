@@ -72,7 +72,7 @@
                     <div class="card p-3 h-100 section-card">
                         <h6 class="border-bottom pb-2 mb-2"><i class="bi bi-clipboard-pulse text-success"></i> Consultation Info</h6>
                         <table class="table table-sm table-borderless info-table mb-0">
-                            <tr><td>Date:</td><td>{{ consultation.created_at[:16] }}</td></tr>
+                            <tr><td>Date:</td><td>{{ consultation.created_at.strftime('%Y-%m-%d %H:%M') }}</td></tr>
                             <tr><td>Duration:</td><td>{{ consultation.duration }}</td></tr>
                             <tr>
                                 <td>Severity:</td>
