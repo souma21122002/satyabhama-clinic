@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Satyabhama Clinic</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .card { border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .btn-remedy { background: linear-gradient(45deg, #667eea, #764ba2); border: none; }
+        .btn-remedy:hover { transform: scale(1.05); }
+        .hero-section { background: rgba(255, 255, 255, 0.8); padding: 60px 0; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    </style>
+</head>
+<body class="d-flex align-items-center py-5">
+    <div class="container">
+        {% extends "base.html" %}
+
+        {% block title %}Satyabhama Clinic - সত্যভামা ক্লিনিক | Homeopathy{% endblock %}
+
+        {% block content %}
+        <div class="hero-section text-center">
+            <div class="container position-relative" style="z-index: 1;">
+                <img src="/uploads/clinic_logo.png" alt="Satyabhama Clinic" style="height: 150px; margin-bottom: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                <h1 class="display-4 fw-bold mb-2">Satyabhama Clinic</h1>
+                <h2 class="bengali-text mb-3" style="font-size: 1.8rem;">সত্যভামা ক্লিনিক</h2>
+                <p class="lead mb-2">Dr. Ajoy Kumar Singha Mahapatra (BHMS)</p>
+                <p class="mb-2">
+                    <i class="bi bi-telephone"></i> +91 9932199936 | +91 7718494401
+                </p>
+                <p class="mb-5">AI-Powered Remedy Finder & Expert Homeopathic Consultations</p>
+                <a href="#remedy-finder" class="btn btn-light btn-lg me-3 fw-bold">
+                    <i class="bi bi-search"></i> Find Remedies
+                </a>
+                <a href="/patient/consult" class="btn btn-gold btn-lg">
+                    <i class="bi bi-chat-dots"></i> Consult Doctor
+                </a>
+            </div>
+        </div>
+
+        <div class="container py-5">
+            <!-- Login/Register Section - Always check session properly -->
+            {% if not session.get('user') %}
+            <div class="row g-4 mb-5">
+                <!-- Patient Login Card -->
+                <div class="col-md-6">
+                    <div class="card p-4 h-100 border-primary" style="border-width: 2px;">
+                        <div class="text-center mb-3">
+                            <span style="font-size: 50px;">🧑‍🤝‍🧑</span>
+                        </div>
+                        <h4 class="text-center text-primary">Patient Portal</h4>
+                        <p class="text-muted text-center">Login to view your consultations</p>
+                        <div class="d-grid gap-2">
+                            <a href="/login" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right"></i> Patient Login
+                            </a>
+                            <a href="/register" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-person-plus"></i> Register
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Doctor Login Card -->
+                <div class="col-md-6">
+                    <div class="card p-4 h-100 border-success" style="border-width: 2px;">
+                        <div class="text-center mb-3">
+                            <span style="font-size: 50px;">👨‍⚕️</span>
+                        </div>
+                        <h4 class="text-center text-success">Doctor Portal</h4>
+                        <p class="text-muted text-center">Access dashboard</p>
+                        <div class="d-grid gap-2">
+                            <a href="/doctor/login" class="btn btn-success btn-lg">
+                                <i class="bi bi-box-arrow-in-right"></i> Doctor Login
+                            </a>
+                            <a href="/about" class="btn btn-outline-success btn-lg">
+                                <i class="bi bi-info-circle"></i> About Doctor
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Show welcome message for logged in users -->
+            {% if session.user.role == 'doctor' %}
+            <div class="card mb-5 border-success" style="border-width: 3px; background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));">
+                <div class="card-body p-5">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-3">
+                                <span style="font-size: 50px; margin-right: 15px;">👨‍⚕️</span>
+                                <div>
+                                    <h3 class="mb-0 text-success">Welcome, Dr. Ajoy Kumar Singha Mahapatra</h3>
+                                    <p class="text-muted mb-0">BHMS | Homeopathic Physician</p>
+                                </div>
+                            </div>
+                            <p class="text-muted mb-0"><i class="bi bi-info-circle"></i> You are logged in as <strong>Doctor</strong></p>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-4 mt-md-0">
+                            <a href="/doctor/dashboard" class="btn btn-success btn-lg me-2">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                            <a href="/doctor/patients" class="btn btn-outline-success btn-lg">
+                                <i class="bi bi-people"></i> Patients
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Patient Welcome Section -->
+            {% else %}
+            <div class="card mb-5 border-primary" style="border-width: 3px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05));">
+                <div class="card-body p-5">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-3">
+                                <span style="font-size: 50px; margin-right: 15px;">🧑‍🤝‍🧑</span>
+                                <div>
+                                    <h3 class="mb-0" style="color: #667eea;">Welcome, {{ session.user.name }}</h3>
+                                    <p class="text-muted mb-0">Patient Account</p>
+                                </div>
+                            </div>
+                            <p class="text-muted mb-0"><i class="bi bi-info-circle"></i> You are logged in as <strong>Patient</strong></p>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-4 mt-md-0">
+                            <a href="/patient/dashboard" class="btn btn-primary btn-lg me-2">
+                                <i class="bi bi-speedometer2"></i> My Consultations
+                            </a>
+                            <a href="/patient/consult" class="btn btn-success btn-lg">
+                                <i class="bi bi-plus-circle"></i> New Consultation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+            
+            <!-- Feature Cards -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="card h-100 p-4 text-center">
+                        <div class="display-1 mb-3">🔍</div>
+                        <h4>AI Remedy Finder</h4>
+                        <p class="text-muted">Instant AI-powered remedy suggestions</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 p-4 text-center">
+                        <div class="display-1 mb-3">👨‍⚕️</div>
+                        <h4>Expert Consultation</h4>
+                        <p class="text-muted">Connect with our homeopathic expert</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 p-4 text-center">
+                        <div class="display-1 mb-3">🎙️</div>
+                        <h4>Voice & Images</h4>
+                        <p class="text-muted">Send voice and images for diagnosis</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Remedy Finder -->
+            {% if not session.get('user') or session.user.role == 'patient' %}
+            <div class="card p-5" id="remedy-finder">
+                <h2 class="text-center mb-2">🌿 AI-Powered Remedy Finder</h2>
+                <p class="text-center text-muted mb-4">Describe your symptoms for instant suggestions</p>
+                
+                <form action="/find-remedy" method="POST">
+                    <div class="mb-4">
+                        <textarea name="symptoms" class="form-control" rows="5" placeholder="Describe your symptoms in detail..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-search"></i> Find Remedies
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+            
+            <!-- Bottom CTA - Only show for non-logged in users -->
+            {% if not session.get('user') %}
+            <div class="text-center mt-5 p-5 bg-white rounded shadow-sm">
+                <h3 class="mb-4">Need Personal Consultation?</h3>
+                <a href="/register" class="btn btn-primary btn-lg me-3"><i class="bi bi-person-plus"></i> Register</a>
+                <a href="/about" class="btn btn-gold btn-lg"><i class="bi bi-person-badge"></i> Meet Doctor</a>
+            </div>
+            {% endif %}
+        </div>
+        {% endblock %}
+    </div>
+</body>
+</html>
