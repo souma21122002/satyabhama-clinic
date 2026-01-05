@@ -114,8 +114,20 @@ def find_remedy():
 
 @app.route("/history")
 def history():
-    cases = load_all_cases(limit=20)
-    return render_template("history.html", cases=cases)
+    try:
+        cases = load_all_cases(limit=20)
+        
+        # Ensure dates are properly formatted for template
+        for case in cases:
+            if case.get('created_at'):
+                if not isinstance(case['created_at'], str):
+                    case['created_at'] = case['created_at'].strftime('%Y-%m-%d %H:%M')
+        
+        return render_template("history.html", cases=cases)
+    except Exception as e:
+        print(f"❌ Error in history route: {e}")
+        flash("Error loading history", "danger")
+        return render_template("history.html", cases=[])
 
 # ========== AUTHENTICATION ==========
 @app.route("/login", methods=["GET", "POST"])

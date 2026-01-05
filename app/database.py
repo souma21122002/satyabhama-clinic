@@ -102,7 +102,7 @@ def save_user(user_data):
                 user_data['password'],
                 user_data.get('phone'),
                 user_data.get('age'),
-                user_data.get('gender'),
+                user_data.get('gender',
                 user_data.get('role', 'patient'),
                 user_data.get('created_at', datetime.now())
             ))
@@ -364,13 +364,23 @@ def load_all_cases(limit=20):
     try:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT * FROM case_history ORDER BY created_at DESC LIMIT %s
+                SELECT id, symptoms, suggested_remedies, created_at 
+                FROM case_history ORDER BY created_at DESC LIMIT %s
             """, (limit,))
             rows = cur.fetchall()
-            columns = [desc[0] for desc in cur.description]
-            return [dict(zip(columns, row)) for row in rows]
+            cases = []
+            for row in rows:
+                case = {
+                    'id': row[0],
+                    'symptoms': row[1],
+                    'suggested_remedies': row[2],
+                    'created_at': row[3]  # This will be datetime object from PostgreSQL
+                }
+                cases.append(case)
+            return cases
     except Exception as e:
         print(f"❌ Error loading cases: {e}")
         return []
     finally:
-        conn.close()
+        if conn:
+            conn.close()
