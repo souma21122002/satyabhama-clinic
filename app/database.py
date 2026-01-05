@@ -374,7 +374,7 @@ def load_all_cases(limit=20):
                     'id': row[0],
                     'symptoms': row[1],
                     'suggested_remedies': row[2],
-                    'created_at': row[3]  # This will be datetime object from PostgreSQL
+                    'created_at': row[3]
                 }
                 cases.append(case)
             return cases
