@@ -25,16 +25,33 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "homeopathy-secret-key-2024")
 
-# Initialize database on app startup
-try:
-    init_db()
-    print("✅ Database initialized successfully")
-except Exception as e:
-    print(f"⚠️ Database init warning: {e}")
-
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+# Initialize database and create default doctor on startup
+try:
+    init_db()
+    print("✅ Database initialized")
+    
+    # Create default doctor account
+    doctor_email = "doctor@homeopathy.com"
+    if not get_user(doctor_email):
+        doctor_data = {
+            "name": "Dr. Ajoy Kumar Singha Mahapatra",
+            "email": doctor_email,
+            "password": "doctor123",
+            "phone": "+919932199936",
+            "age": 35,
+            "gender": "male",
+            "role": "doctor"
+        }
+        save_user(doctor_data)
+        print(f"✅ Default doctor account created: {doctor_email}")
+    else:
+        print(f"✅ Doctor account already exists: {doctor_email}")
+except Exception as e:
+    print(f"⚠️ Startup warning: {e}")
 
 ALLOWED_AUDIO = {'webm', 'mp3', 'wav', 'ogg', 'm4a'}
 ALLOWED_IMAGES = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
