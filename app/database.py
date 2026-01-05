@@ -102,7 +102,7 @@ def save_user(user_data):
                 user_data['password'],
                 user_data.get('phone'),
                 user_data.get('age'),
-                user_data.get('gender',
+                user_data.get('gender'),
                 user_data.get('role', 'patient'),
                 user_data.get('created_at', datetime.now())
             ))
@@ -196,32 +196,18 @@ def load_consultations():
     
     try:
         with conn.cursor() as cur:
-            cur.execute("""
-                SELECT id, patient_email, patient_name, symptoms, duration, severity, 
-                       medical_history, current_medications, voice_record, images, status, 
-                       doctor_reply, created_at
-                FROM consultations ORDER BY created_at DESC
-            """)
+            cur.execute("SELECT * FROM consultations ORDER BY created_at DESC")
             rows = cur.fetchall()
             columns = [desc[0] for desc in cur.description]
             consultations = []
             for row in rows:
                 cons = dict(zip(columns, row))
-                # Parse JSON fields
                 if cons.get('images'):
-                    try:
-                        cons['images'] = json.loads(cons['images']) if isinstance(cons['images'], str) else []
-                    except:
-                        cons['images'] = []
+                    cons['images'] = json.loads(cons['images']) if isinstance(cons['images'], str) else cons['images']
                 else:
                     cons['images'] = []
-                    
                 if cons.get('doctor_reply'):
-                    try:
-                        cons['doctor_reply'] = json.loads(cons['doctor_reply']) if isinstance(cons['doctor_reply'], str) else cons['doctor_reply']
-                    except:
-                        cons['doctor_reply'] = None
-                
+                    cons['doctor_reply'] = json.loads(cons['doctor_reply']) if isinstance(cons['doctor_reply'], str) else cons['doctor_reply']
                 consultations.append(cons)
             return consultations
     except Exception as e:
@@ -238,9 +224,7 @@ def load_patient_consultations(patient_email):
     
     try:
         with conn.cursor() as cur:
-            cur.execute("""
-                SELECT * FROM consultations WHERE patient_email = %s ORDER BY created_at DESC
-            """, (patient_email,))
+            cur.execute("SELECT * FROM consultations WHERE patient_email = %s ORDER BY created_at DESC", (patient_email,))
             rows = cur.fetchall()
             columns = [desc[0] for desc in cur.description]
             consultations = []
@@ -248,6 +232,8 @@ def load_patient_consultations(patient_email):
                 cons = dict(zip(columns, row))
                 if cons.get('images'):
                     cons['images'] = json.loads(cons['images']) if isinstance(cons['images'], str) else cons['images']
+                else:
+                    cons['images'] = []
                 if cons.get('doctor_reply'):
                     cons['doctor_reply'] = json.loads(cons['doctor_reply']) if isinstance(cons['doctor_reply'], str) else cons['doctor_reply']
                 consultations.append(cons)
