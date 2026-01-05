@@ -25,19 +25,19 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "homeopathy-secret-key-2024")
 
+# Initialize database on app startup
+try:
+    init_db()
+    print("✅ Database initialized successfully")
+except Exception as e:
+    print(f"⚠️ Database init warning: {e}")
+
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 ALLOWED_AUDIO = {'webm', 'mp3', 'wav', 'ogg', 'm4a'}
 ALLOWED_IMAGES = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-
-# Initialize database
-try:
-    init_db()
-    print("✅ Database initialized")
-except Exception as e:
-    print(f"⚠️ Database initialization warning: {e}")
 
 matcher = AIRemedyMatcher()
 
@@ -75,9 +75,6 @@ def set_security_headers(response):
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return response
-
-# Initialize database on startup
-init_db()
 
 def allowed_file(filename, allowed_set):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_set
