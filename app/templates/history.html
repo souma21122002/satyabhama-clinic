@@ -39,9 +39,9 @@
                 <tbody>
                     {% for case in cases %}
                     <tr>
-                        <td>{{ case.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ case.created_at.strftime('%Y-%m-%d %H:%M') if case.created_at else 'N/A' }}</td>
                         <td>{{ case.symptoms[:100] }}{% if case.symptoms|length > 100 %}...{% endif %}</td>
-                        <td><span class="badge bg-primary">{{ case.suggested_remedies }}</span></td>
+                        <td><span class="badge bg-primary">{{ case.suggested_remedies or 'N/A' }}</span></td>
                     </tr>
                     {% else %}
                     <tr>

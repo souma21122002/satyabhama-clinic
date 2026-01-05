@@ -2,21 +2,13 @@ import json
 import os
 from datetime import datetime
 import psycopg
-from psycopg import sql
 
 def get_database_url():
-    """Convert Render's internal DB URL to proper PostgreSQL connection string"""
+    """Get PostgreSQL connection URL"""
     db_url = os.getenv("DATABASE_URL", "postgresql://localhost/homeopathy")
     
-    # Render provides URL in format: postgres://user:password@host:port/dbname
-    # Convert to proper format if needed
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
-    
-    # If it looks like a malformed string, try to construct proper URL
-    if "=" not in db_url and "@" not in db_url and ":" in db_url:
-        print(f"⚠️ Detected non-standard DATABASE_URL format, using default")
-        return "postgresql://localhost/homeopathy"
     
     return db_url
 
@@ -28,20 +20,18 @@ def get_db_connection():
         conn = psycopg.connect(DATABASE_URL, autocommit=False)
         return conn
     except Exception as e:
-        print(f"Database connection error: {e}")
-        print(f"DATABASE_URL format: {DATABASE_URL[:20]}...")
+        print(f"❌ Database connection error: {e}")
         return None
 
 def init_db():
     """Initialize PostgreSQL database"""
     conn = get_db_connection()
     if not conn:
-        print("❌ Could not connect to database - check DATABASE_URL")
+        print("❌ Could not connect to database")
         return
     
     try:
         with conn.cursor() as cur:
-            # Create users table
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS users (
                     id SERIAL PRIMARY KEY,
@@ -58,7 +48,6 @@ def init_db():
                 )
             """)
             
-            # Create consultations table
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS consultations (
                     id SERIAL PRIMARY KEY,
@@ -78,7 +67,6 @@ def init_db():
                 )
             """)
             
-            # Create case history table
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS case_history (
                     id SERIAL PRIMARY KEY,
@@ -89,15 +77,15 @@ def init_db():
             """)
             
             conn.commit()
-            print("✅ Database initialized successfully")
+            print("✅ Database initialized")
     except Exception as e:
-        print(f"Error initializing database: {e}")
+        print(f"❌ Database init error: {e}")
         conn.rollback()
     finally:
         conn.close()
 
 def save_user(user_data):
-    """Save user to PostgreSQL"""
+    """Save user"""
     conn = get_db_connection()
     if not conn:
         return False
@@ -121,14 +109,14 @@ def save_user(user_data):
             conn.commit()
             return True
     except Exception as e:
-        print(f"Error saving user: {e}")
+        print(f"❌ Error saving user: {e}")
         conn.rollback()
         return False
     finally:
         conn.close()
 
 def get_user(email):
-    """Get user from PostgreSQL"""
+    """Get user by email"""
     conn = get_db_connection()
     if not conn:
         return None
@@ -136,13 +124,13 @@ def get_user(email):
     try:
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM users WHERE email = %s", (email,))
-            user = cur.fetchone()
-            if user:
+            row = cur.fetchone()
+            if row:
                 columns = [desc[0] for desc in cur.description]
-                return dict(zip(columns, user))
+                return dict(zip(columns, row))
             return None
     except Exception as e:
-        print(f"Error getting user: {e}")
+        print(f"❌ Error getting user: {e}")
         return None
     finally:
         conn.close()
@@ -157,18 +145,16 @@ def load_all_patients():
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM users WHERE role = 'patient' ORDER BY created_at DESC")
             rows = cur.fetchall()
-            if not rows:
-                return []
             columns = [desc[0] for desc in cur.description]
             return [dict(zip(columns, row)) for row in rows]
     except Exception as e:
-        print(f"Error loading patients: {e}")
+        print(f"❌ Error loading patients: {e}")
         return []
     finally:
         conn.close()
 
 def save_consultation(consultation):
-    """Save consultation to PostgreSQL"""
+    """Save consultation"""
     conn = get_db_connection()
     if not conn:
         return False
@@ -196,7 +182,7 @@ def save_consultation(consultation):
             conn.commit()
             return True
     except Exception as e:
-        print(f"Error saving consultation: {e}")
+        print(f"❌ Error saving consultation: {e}")
         conn.rollback()
         return False
     finally:
@@ -210,26 +196,28 @@ def load_consultations():
     
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT * FROM consultations ORDER BY created_at DESC")
+            cur.execute("""
+                SELECT * FROM consultations ORDER BY created_at DESC
+            """)
             rows = cur.fetchall()
-            if not rows:
-                return []
             columns = [desc[0] for desc in cur.description]
             consultations = []
             for row in rows:
-                consultation = dict(zip(columns, row))
-                if isinstance(consultation['images'], str):
-                    consultation['images'] = json.loads(consultation['images'])
-                consultations.append(consultation)
+                cons = dict(zip(columns, row))
+                if cons.get('images'):
+                    cons['images'] = json.loads(cons['images']) if isinstance(cons['images'], str) else cons['images']
+                if cons.get('doctor_reply'):
+                    cons['doctor_reply'] = json.loads(cons['doctor_reply']) if isinstance(cons['doctor_reply'], str) else cons['doctor_reply']
+                consultations.append(cons)
             return consultations
     except Exception as e:
-        print(f"Error loading consultations: {e}")
+        print(f"❌ Error loading consultations: {e}")
         return []
     finally:
         conn.close()
 
 def load_patient_consultations(patient_email):
-    """Get patient's consultations"""
+    """Get patient consultations"""
     conn = get_db_connection()
     if not conn:
         return []
@@ -240,28 +228,28 @@ def load_patient_consultations(patient_email):
                 SELECT * FROM consultations WHERE patient_email = %s ORDER BY created_at DESC
             """, (patient_email,))
             rows = cur.fetchall()
-            if not rows:
-                return []
             columns = [desc[0] for desc in cur.description]
             consultations = []
             for row in rows:
-                consultation = dict(zip(columns, row))
-                if isinstance(consultation['images'], str):
-                    consultation['images'] = json.loads(consultation['images'])
-                consultations.append(consultation)
+                cons = dict(zip(columns, row))
+                if cons.get('images'):
+                    cons['images'] = json.loads(cons['images']) if isinstance(cons['images'], str) else cons['images']
+                if cons.get('doctor_reply'):
+                    cons['doctor_reply'] = json.loads(cons['doctor_reply']) if isinstance(cons['doctor_reply'], str) else cons['doctor_reply']
+                consultations.append(cons)
             return consultations
     except Exception as e:
-        print(f"Error loading patient consultations: {e}")
+        print(f"❌ Error loading patient consultations: {e}")
         return []
     finally:
         conn.close()
 
 def get_patient_history(patient_email):
-    """Get patient's complete history"""
+    """Get patient history"""
     return load_patient_consultations(patient_email)
 
 def update_consultation_reply(consultation_id, reply):
-    """Update consultation with doctor's reply"""
+    """Update consultation reply"""
     conn = get_db_connection()
     if not conn:
         return False
@@ -276,7 +264,7 @@ def update_consultation_reply(consultation_id, reply):
             conn.commit()
             return True
     except Exception as e:
-        print(f"Error updating consultation: {e}")
+        print(f"❌ Error updating reply: {e}")
         conn.rollback()
         return False
     finally:
@@ -298,14 +286,14 @@ def update_patient_notes(patient_email, notes):
             conn.commit()
             return True
     except Exception as e:
-        print(f"Error updating patient notes: {e}")
+        print(f"❌ Error updating notes: {e}")
         conn.rollback()
         return False
     finally:
         conn.close()
 
 def delete_consultation_media(consultation_id, media_type, filename):
-    """Delete media from consultation"""
+    """Delete media"""
     conn = get_db_connection()
     if not conn:
         return False
@@ -326,14 +314,14 @@ def delete_consultation_media(consultation_id, media_type, filename):
             conn.commit()
             return True
     except Exception as e:
-        print(f"Error deleting media: {e}")
+        print(f"❌ Error deleting media: {e}")
         conn.rollback()
         return False
     finally:
         conn.close()
 
 def save_case(case_data):
-    """Save case history"""
+    """Save case"""
     conn = get_db_connection()
     if not conn:
         return False
@@ -347,14 +335,14 @@ def save_case(case_data):
             conn.commit()
             return True
     except Exception as e:
-        print(f"Error saving case: {e}")
+        print(f"❌ Error saving case: {e}")
         conn.rollback()
         return False
     finally:
         conn.close()
 
 def load_all_cases(limit=20):
-    """Get case history"""
+    """Get all cases"""
     conn = get_db_connection()
     if not conn:
         return []
@@ -365,12 +353,10 @@ def load_all_cases(limit=20):
                 SELECT * FROM case_history ORDER BY created_at DESC LIMIT %s
             """, (limit,))
             rows = cur.fetchall()
-            if not rows:
-                return []
             columns = [desc[0] for desc in cur.description]
             return [dict(zip(columns, row)) for row in rows]
     except Exception as e:
-        print(f"Error loading cases: {e}")
+        print(f"❌ Error loading cases: {e}")
         return []
     finally:
         conn.close()
