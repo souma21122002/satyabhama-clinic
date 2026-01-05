@@ -2,12 +2,23 @@ import os
 import sys
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory
 from app.ai_matcher import AIRemedyMatcher
-from app.database import (
-    init_db, save_case, load_all_cases, save_consultation, load_consultations,
-    load_patient_consultations, save_user, get_user, load_all_patients,
-    update_consultation_reply, delete_consultation_media, get_patient_history,
-    update_patient_notes
-)
+
+# Use appropriate database based on environment
+if os.getenv("FLASK_ENV") == "production":
+    from app.database import (
+        init_db, save_case, load_all_cases, save_consultation, load_consultations,
+        load_patient_consultations, save_user, get_user, load_all_patients,
+        update_consultation_reply, delete_consultation_media, get_patient_history,
+        update_patient_notes
+    )
+else:
+    from app.database_local import (
+        init_db, save_case, load_all_cases, save_consultation, load_consultations,
+        load_patient_consultations, save_user, get_user, load_all_patients,
+        update_consultation_reply, delete_consultation_media, get_patient_history,
+        update_patient_notes
+    )
+
 from datetime import datetime
 from werkzeug.utils import secure_filename
 
