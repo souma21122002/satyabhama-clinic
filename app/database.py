@@ -4,22 +4,39 @@ from datetime import datetime
 import psycopg
 from psycopg import sql
 
-# PostgreSQL connection using psycopg v3
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://localhost/homeopathy")
+def get_database_url():
+    """Convert Render's internal DB URL to proper PostgreSQL connection string"""
+    db_url = os.getenv("DATABASE_URL", "postgresql://localhost/homeopathy")
+    
+    # Render provides URL in format: postgres://user:password@host:port/dbname
+    # Convert to proper format if needed
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    
+    # If it looks like a malformed string, try to construct proper URL
+    if "=" not in db_url and "@" not in db_url and ":" in db_url:
+        print(f"⚠️ Detected non-standard DATABASE_URL format, using default")
+        return "postgresql://localhost/homeopathy"
+    
+    return db_url
+
+DATABASE_URL = get_database_url()
 
 def get_db_connection():
     """Get PostgreSQL connection"""
     try:
-        return psycopg.connect(DATABASE_URL)
+        conn = psycopg.connect(DATABASE_URL, autocommit=False)
+        return conn
     except Exception as e:
         print(f"Database connection error: {e}")
+        print(f"DATABASE_URL format: {DATABASE_URL[:20]}...")
         return None
 
 def init_db():
     """Initialize PostgreSQL database"""
     conn = get_db_connection()
     if not conn:
-        print("Could not connect to database")
+        print("❌ Could not connect to database - check DATABASE_URL")
         return
     
     try:
