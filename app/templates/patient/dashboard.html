@@ -27,29 +27,36 @@
                         {{ c.status|upper }}
                     </span>
                     <h5 class="mb-1">Consultation #{{ c.id }}</h5>
-                    <small class="text-muted">{{ c.created_at }}</small>
+                    <small class="text-muted">
+                        {% if c.created_at %}
+                            {% if c.created_at is string %}
+                                {{ c.created_at }}
+                            {% else %}
+                                {{ c.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% endif %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </small>
                 </div>
-                <span class="badge bg-secondary">{{ c.severity }}</span>
+                <span class="badge bg-secondary">{{ c.severity or 'N/A' }}</span>
             </div>
             
-            <p><strong>Symptoms:</strong> {{ c.symptoms }}</p>
-            <p><strong>Duration:</strong> {{ c.duration }}</p>
+            <p><strong>Symptoms:</strong> {{ c.symptoms or 'N/A' }}</p>
+            <p><strong>Duration:</strong> {{ c.duration or 'N/A' }}</p>
             
             <!-- Media Section -->
-            <div class="row mt-3">
+            <div class="row">
                 {% if c.voice_record %}
                 <div class="col-md-6 mb-3">
                     <div class="card bg-light p-3">
                         <h6><i class="bi bi-mic-fill text-danger"></i> Voice Recording</h6>
-                        <audio controls preload="metadata" class="w-100">
+                        <audio controls preload="metadata" class="w-100 mt-2" style="height: 40px;">
                             <source src="/uploads/{{ c.voice_record }}" type="audio/webm">
-                            <source src="/uploads/{{ c.voice_record }}" type="audio/mp3">
+                            <source src="/uploads/{{ c.voice_record }}" type="audio/mpeg">
                             <source src="/uploads/{{ c.voice_record }}" type="audio/wav">
                             Your browser does not support audio.
                         </audio>
-                        <a href="/uploads/{{ c.voice_record }}" download class="btn btn-sm btn-outline-primary mt-2">
-                            <i class="bi bi-download"></i> Download Audio
-                        </a>
                     </div>
                 </div>
                 {% endif %}
@@ -60,8 +67,9 @@
                         <h6><i class="bi bi-images text-primary"></i> Uploaded Images ({{ c.images|length }})</h6>
                         <div class="d-flex flex-wrap gap-2 mt-2">
                             {% for img in c.images %}
-                            <a href="/uploads/{{ img }}" target="_blank" class="position-relative">
-                                <img src="/uploads/{{ img }}" class="img-thumbnail-custom" alt="Uploaded image">
+                            <a href="/uploads/{{ img }}" target="_blank">
+                                <img src="/uploads/{{ img }}" 
+                                     style="height: 70px; width: 70px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd; cursor: pointer;">
                             </a>
                             {% endfor %}
                         </div>
@@ -76,18 +84,17 @@
                 <h6 class="text-success mb-3"><i class="bi bi-check-circle-fill"></i> Doctor's Reply</h6>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Diagnosis:</strong><br>{{ c.doctor_reply.diagnosis }}</p>
-                        <p><strong>Remedies:</strong><br>{{ c.doctor_reply.remedies }}</p>
+                        <p><strong>Diagnosis:</strong><br>{{ c.doctor_reply.get('diagnosis') or 'N/A' }}</p>
+                        <p><strong>Remedies:</strong><br>{{ c.doctor_reply.get('remedies') or 'N/A' }}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Potency:</strong><br>{{ c.doctor_reply.potency }}</p>
-                        <p><strong>Instructions:</strong><br>{{ c.doctor_reply.instructions }}</p>
-                        {% if c.doctor_reply.follow_up %}
-                        <p><strong>Follow-up:</strong><br>{{ c.doctor_reply.follow_up }}</p>
+                        <p><strong>Potency:</strong><br>{{ c.doctor_reply.get('potency') or 'N/A' }}</p>
+                        <p><strong>Instructions:</strong><br>{{ c.doctor_reply.get('instructions') or 'N/A' }}</p>
+                        {% if c.doctor_reply.get('follow_up') %}
+                        <p><strong>Follow-up:</strong><br>{{ c.doctor_reply.get('follow_up') }}</p>
                         {% endif %}
                     </div>
                 </div>
-                <small class="text-muted">Replied on: {{ c.doctor_reply.replied_at }}</small>
             </div>
             {% else %}
             <div class="alert alert-warning mt-3 mb-0">
@@ -98,7 +105,7 @@
         {% endfor %}
     {% else %}
         <div class="card p-5 text-center">
-            <div class="display-1 mb-3">📭</div>
+            <div class="display-1">📭</div>
             <h4>No Consultations Yet</h4>
             <p class="text-muted">Start your first consultation with our homeopathic doctor</p>
             <a href="/patient/consult" class="btn btn-primary btn-lg">Start Consultation</a>

@@ -174,207 +174,215 @@ def register():
         }
         if get_user(user_data["email"]):
             flash("Email already registered", "danger")
-        else:
+        else:lash("Email already registered", "danger")
             save_user(user_data)
             flash("Registration successful! Please login.", "success")
-            return redirect(url_for("login"))
+            return redirect(url_for("login"))on
     return render_template("auth/register.html")
-
-@app.route("/logout")
-def logout():
-    session.pop("user", None)
+                flash("Registration successful! You are now logged in.", "success")
+@app.route("/logout")n redirect(url_for("patient_dashboard"))
+def logout():lse:
+    session.pop("user", None)ration failed. Please try again.", "danger")
     flash("Logged out successfully", "info")
-    return redirect(url_for("home"))
+    return redirect(url_for("home"))ister.html")
 
 # ========== PATIENT ROUTES ==========
 @app.route("/patient/dashboard")
-def patient_dashboard():
+def patient_dashboard():None)
     if "user" not in session or session["user"]["role"] != "patient":
         flash("Please login as patient", "warning")
         return redirect(url_for("login"))
     consultations = load_patient_consultations(session["user"]["email"])
     return render_template("patient/dashboard.html", consultations=consultations)
-
-@app.route("/patient/consult", methods=["GET", "POST"])
-def patient_consult():
+def patient_dashboard():
+@app.route("/patient/consult", methods=["GET", "POST"]) != "patient":
+def patient_consult():login as patient", "warning")
     if "user" not in session or session["user"]["role"] != "patient":
-        flash("Please login as patient", "warning")
-        return redirect(url_for("login"))
+        flash("Please login as patient", "warning")ion["user"]["email"])
+        return redirect(url_for("login"))oard.html", consultations=consultations)
     
-    if request.method == "POST":
+    if request.method == "POST":ethods=["GET", "POST"])
         # Handle voice recording
-        voice_filename = None
-        if "voice_record" in request.files:
+        voice_filename = Noneor session["user"]["role"] != "patient":
+        if "voice_record" in request.files:arning")
             voice_file = request.files["voice_record"]
             if voice_file.filename and allowed_file(voice_file.filename, ALLOWED_AUDIO):
                 voice_filename = f"audio_{datetime.now().strftime('%Y%m%d%H%M%S')}_{secure_filename(voice_file.filename)}"
                 voice_file.save(os.path.join(app.config["UPLOAD_FOLDER"], voice_filename))
-        
-        # Handle multiple images
-        image_filenames = []
-        if "images" in request.files:
-            images = request.files.getlist("images")
-            for img in images:
+        voice_filename = None
+        # Handle multiple imagesuest.files:
+        image_filenames = []uest.files["voice_record"]
+        if "images" in request.files:d allowed_file(voice_file.filename, ALLOWED_AUDIO):
+            images = request.files.getlist("images")ow().strftime('%Y%m%d%H%M%S')}_{secure_filename(voice_file.filename)}"
+            for img in images:e(os.path.join(app.config["UPLOAD_FOLDER"], voice_filename))
                 if img.filename and allowed_file(img.filename, ALLOWED_IMAGES):
                     img_filename = f"img_{datetime.now().strftime('%Y%m%d%H%M%S')}_{secure_filename(img.filename)}"
                     img.save(os.path.join(app.config["UPLOAD_FOLDER"], img_filename))
                     image_filenames.append(img_filename)
-        
-        consultation = {
-            "patient_email": session["user"]["email"],
-            "patient_name": session["user"]["name"],
-            "symptoms": request.form.get("symptoms"),
-            "duration": request.form.get("duration"),
+            images = request.files.getlist("images")
+        consultation = {mages:
+            "patient_email": session["user"]["email"],ilename, ALLOWED_IMAGES):
+            "patient_name": session["user"]["name"],ow().strftime('%Y%m%d%H%M%S')}_{secure_filename(img.filename)}"
+            "symptoms": request.form.get("symptoms"),"UPLOAD_FOLDER"], img_filename))
+            "duration": request.form.get("duration"),me)
             "severity": request.form.get("severity"),
             "medical_history": request.form.get("medical_history"),
             "current_medications": request.form.get("current_medications"),
+            "voice_record": voice_filename,["name"],
+            "images": image_filenames,et("symptoms"),
+            "status": "pending",form.get("duration"),
+            "doctor_reply": None,orm.get("severity"),
+            "created_at": datetime.now().isoformat()ical_history"),
+        }   "current_medications": request.form.get("current_medications"),
             "voice_record": voice_filename,
-            "images": image_filenames,
-            "status": "pending",
-            "doctor_reply": None,
-            "created_at": datetime.now().isoformat()
-        }
-        
         save_consultation(consultation)
         flash("Consultation submitted successfully!", "success")
         return redirect(url_for("patient_dashboard"))
-    
+            "created_at": datetime.now().isoformat()
     return render_template("patient/consult.html")
-
-# ========== DOCTOR ROUTES ==========
-@app.route("/doctor/dashboard")
-def doctor_dashboard():
+        
+# ========== DOCTOR ROUTES ==========n)
+@app.route("/doctor/dashboard")mitted successfully!", "success")
+def doctor_dashboard():(url_for("patient_dashboard"))
     if "user" not in session or session["user"]["role"] != "doctor":
         flash("Please login as doctor", "warning")
         return redirect(url_for("doctor_login"))
-    
+    ======== DOCTOR ROUTES ==========
     consultations = load_consultations()
-    
-    # Count pending and replied
-    pending_count = len([c for c in consultations if c.get('status') == 'pending'])
-    replied_count = len([c for c in consultations if c.get('status') == 'replied'])
+    doctor_dashboard():
+    # Separate pending and replied session["user"]["role"] != "doctor":
     pending_consultations = [c for c in consultations if c.get('status') == 'pending']
+    replied_consultations = [c for c in consultations if c.get('status') == 'replied']
+    pending_count = len(pending_consultations)
+    replied_count = len(replied_consultations)consultations = load_consultations()
     
     return render_template(
-        "doctor/dashboard.html", 
-        consultations=consultations,
-        pending_consultations=pending_consultations,
-        pending_count=pending_count,
-        replied_count=replied_count
+        "doctor/dashboard.html", consultations if c.get('status') == 'pending'])
+        consultations=consultations, c.get('status') == 'replied'])
+        pending_consultations=pending_consultations, in consultations if c.get('status') == 'pending']
+        replied_consultations=replied_consultations,
+        pending_count=pending_count,eturn render_template(
+        replied_count=replied_count        "doctor/dashboard.html", 
     )
-
+ing_consultations,
 @app.route("/doctor/reply/<int:consultation_id>", methods=["GET", "POST"])
 def doctor_reply(consultation_id):
     if "user" not in session or session["user"]["role"] != "doctor":
         flash("Please login as doctor", "warning")
-        return redirect(url_for("doctor_login"))
+        return redirect(url_for("doctor_login"))ion_id>", methods=["GET", "POST"])
     
-    consultations = load_consultations()
-    consultation = next((c for c in consultations if c.get("id") == consultation_id), None)
+    consultations = load_consultations()if "user" not in session or session["user"]["role"] != "doctor":
+    consultation = next((c for c in consultations if c.get("id") == consultation_id), None)gin as doctor", "warning")
     
     if not consultation:
-        flash("Consultation not found", "danger")
-        return redirect(url_for("doctor_dashboard"))
+        flash("Consultation not found", "danger")consultations = load_consultations()
+        return redirect(url_for("doctor_dashboard"))consultations if c.get("id") == consultation_id), None)
     
     # Get patient's complete history
-    patient_history = get_patient_history(consultation["patient_email"])
-    patient_info = get_user(consultation["patient_email"])
+    patient_history = get_patient_history(consultation["patient_email"])    flash("Consultation not found", "danger")
+    patient_info = get_user(consultation["patient_email"])"doctor_dashboard"))
     
     if request.method == "POST":
-        reply = {
-            "diagnosis": request.form.get("diagnosis"),
+        reply = {n["patient_email"])
+            "diagnosis": request.form.get("diagnosis"),mail"])
             "remedies": request.form.get("remedies"),
             "potency": request.form.get("potency"),
             "instructions": request.form.get("instructions"),
             "follow_up": request.form.get("follow_up"),
-            "medicines_given": request.form.get("medicines_given"),
-            "doctor_notes": request.form.get("doctor_notes"),
-            "replied_at": datetime.now().isoformat()
-        }
-        update_consultation_reply(consultation_id, reply)
-        flash("Reply sent to patient!", "success")
-        return redirect(url_for("doctor_dashboard"))
+            "medicines_given": request.form.get("medicines_given"),,
+            "doctor_notes": request.form.get("doctor_notes"),   "potency": request.form.get("potency"),
+            "replied_at": datetime.now().isoformat()s"),
+        }up"),
+        update_consultation_reply(consultation_id, reply)icines_given"),
+        flash("Reply sent to patient!", "success")        "doctor_notes": request.form.get("doctor_notes"),
+        return redirect(url_for("doctor_dashboard"))at()
     
     return render_template("doctor/reply.html", 
                          consultation=consultation, 
-                         patient_history=patient_history,
+                         patient_history=patient_history,        return redirect(url_for("doctor_dashboard"))
                          patient_info=patient_info)
-
+y.html", 
 @app.route("/doctor/patient/<patient_email>")
-def doctor_view_patient(patient_email):
-    if "user" not in session or session["user"]["role"] != "doctor":
+def doctor_view_patient(patient_email):istory,
+    if "user" not in session or session["user"]["role"] != "doctor":fo)
         flash("Please login as doctor", "warning")
-        return redirect(url_for("doctor_login"))
+        return redirect(url_for("doctor_login"))>")
     
-    patient_info = get_user(patient_email)
-    patient_history = get_patient_history(patient_email)
-    
+    patient_info = get_user(patient_email)if "user" not in session or session["user"]["role"] != "doctor":
+    patient_history = get_patient_history(patient_email)gin as doctor", "warning")
+    n"))
     if not patient_info:
-        flash("Patient not found", "danger")
+        flash("Patient not found", "danger")patient_info = get_user(patient_email)
         return redirect(url_for("doctor_dashboard"))
     
     return render_template("doctor/patient_detail.html", 
-                         patient=patient_info, 
+                         patient=patient_info,         flash("Patient not found", "danger")
                          history=patient_history)
 
 @app.route("/doctor/patient/<patient_email>/notes", methods=["POST"])
-def save_patient_notes(patient_email):
-    if "user" not in session or session["user"]["role"] != "doctor":
+def save_patient_notes(patient_email):t_info, 
+    if "user" not in session or session["user"]["role"] != "doctor":)
         flash("Unauthorized", "danger")
-        return redirect(url_for("doctor_login"))
+        return redirect(url_for("doctor_login"))", methods=["POST"])
     
-    from app.database import update_patient_notes
+    from app.database import update_patient_notes]["role"] != "doctor":
     notes = request.form.get("patient_notes", "")
     update_patient_notes(patient_email, notes)
-    flash("Patient notes saved successfully!", "success")
+    flash("Patient notes saved successfully!", "success")    
     return redirect(url_for("doctor_view_patient", patient_email=patient_email))
-
+"")
 @app.route("/doctor/delete-media/<int:consultation_id>/<media_type>", methods=["POST"])
-def delete_media(consultation_id, media_type):
-    if "user" not in session or session["user"]["role"] != "doctor":
+def delete_media(consultation_id, media_type):ully!", "success")
+    if "user" not in session or session["user"]["role"] != "doctor":", patient_email=patient_email))
         flash("Unauthorized", "danger")
-        return redirect(url_for("doctor_login"))
-    
+        return redirect(url_for("doctor_login"))ltation_id>/<media_type>", methods=["POST"])
+    (consultation_id, media_type):
     filename = request.form.get("filename")
-    if filename:
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    if filename:r")
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)("doctor_login"))
         if os.path.exists(filepath):
             os.remove(filepath)
     
     delete_consultation_media(consultation_id, media_type, filename)
-    flash(f"{media_type.capitalize()} deleted successfully", "success")
-    return redirect(url_for("doctor_reply", consultation_id=consultation_id))
+    flash(f"{media_type.capitalize()} deleted successfully", "success")        if os.path.exists(filepath):
+    return redirect(url_for("doctor_reply", consultation_id=consultation_id)))
 
 @app.route("/doctor/patients")
-def doctor_patients():
-    if "user" not in session or session["user"]["role"] != "doctor":
+def doctor_patients():essfully", "success")
+    if "user" not in session or session["user"]["role"] != "doctor":ultation_id=consultation_id))
         flash("Please login as doctor", "warning")
         return redirect(url_for("doctor_login"))
     patients = load_all_patients()
-    # Add consultation count for each patient
+    # Add consultation count for each patientession or session["user"]["role"] != "doctor":
     all_consultations = load_consultations()
     for p in patients:
-        p["consultation_count"] = len([c for c in all_consultations if c.get("patient_email") == p["email"]])
-    return render_template("doctor/patients.html", patients=patients)
-
-# ========== ABOUT PAGE ==========
-@app.route("/about")
-def about():
+        p["consultation_count"] = len([c for c in all_consultations if c.get("patient_email") == p["email"]])    patients = load_all_patients()
+    return render_template("doctor/patients.html", patients=patients)ach patient
+s = load_consultations()
+# ========== ABOUT PAGE ========== patients:
+@app.route("/about") for c in all_consultations if c.get("patient_email") == p["email"]])
+def about():    return render_template("doctor/patients.html", patients=patients)
     return render_template("about.html")
-
-# ========== GALLERY PAGE ==========
+E ==========
+# ========== GALLERY PAGE ==========bout")
 @app.route("/gallery")
-def gallery():
+def gallery():    return render_template("about.html")
     return render_template("gallery.html")
-
-# ========== LOCATION PAGE ==========
+GE ==========
+# ========== LOCATION PAGE ==========llery")
 @app.route("/location")
-def location():
+def location():    return render_template("gallery.html")
     return render_template("location.html")
 
 # ========== SERVE UPLOADS ==========
 @app.route("/uploads/<path:filename>")
-def uploaded_file(filename):
+def uploaded_file(filename):    return render_template("location.html")
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+===
+if __name__ == "__main__":@app.route("/uploads/<path:filename>")
+
+
+    app.run(debug=True, port=8000)def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 if __name__ == "__main__":

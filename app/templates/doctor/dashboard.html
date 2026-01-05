@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Doctor Dashboard - Homeopathy Healing Center{% endblock %}
+{% block title %}Doctor Dashboard - Satyabhama Clinic{% endblock %}
 
 {% block content %}
 <div class="medical-header">
@@ -47,14 +47,25 @@
                 <div>
                     <span class="badge bg-warning text-dark mb-2">PENDING</span>
                     <h5 class="mb-1">{{ c.patient_name }}</h5>
-                    <small class="text-muted">{{ c.created_at }} | {{ c.severity }}</small>
+                    <small class="text-muted">
+                        {% if c.created_at %}
+                            {% if c.created_at is string %}
+                                {{ c.created_at }}
+                            {% else %}
+                                {{ c.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% endif %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                        | {{ c.severity or 'N/A' }}
+                    </small>
                 </div>
                 <a href="/doctor/reply/{{ c.id }}" class="btn btn-primary">
                     <i class="bi bi-reply"></i> Reply
                 </a>
             </div>
             
-            <p><strong>Symptoms:</strong> {{ c.symptoms[:200] }}{% if c.symptoms|length > 200 %}...{% endif %}</p>
+            <p><strong>Symptoms:</strong> {{ c.symptoms[:200] if c.symptoms else 'N/A' }}{% if c.symptoms and c.symptoms|length > 200 %}...{% endif %}</p>
             
             <div class="row">
                 <!-- Voice Recording -->
@@ -62,12 +73,13 @@
                 <div class="col-md-6 mb-3">
                     <div class="bg-light p-3 rounded">
                         <h6><i class="bi bi-mic-fill text-danger"></i> Voice Recording</h6>
-                        <audio controls preload="auto" class="w-100 mt-2" style="height: 40px;">
+                        <audio controls preload="metadata" class="w-100 mt-2" style="height: 40px;">
                             <source src="/uploads/{{ c.voice_record }}" type="audio/webm">
                             <source src="/uploads/{{ c.voice_record }}" type="audio/mpeg">
                             <source src="/uploads/{{ c.voice_record }}" type="audio/wav">
-                            Your browser does not support audio playback.
+                            Your browser does not support audio.
                         </audio>
+                        <small class="text-muted d-block mt-1">File: {{ c.voice_record }}</small>
                     </div>
                 </div>
                 {% endif %}
@@ -79,10 +91,13 @@
                         <h6><i class="bi bi-images text-primary"></i> Images ({{ c.images|length }})</h6>
                         <div class="d-flex gap-2 mt-2 flex-wrap">
                             {% for img in c.images %}
-                            <a href="/uploads/{{ img }}" target="_blank">
-                                <img src="/uploads/{{ img }}" 
-                                     style="height: 60px; width: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd;">
-                            </a>
+                            <div class="position-relative">
+                                <a href="/uploads/{{ img }}" target="_blank" data-bs-toggle="tooltip" title="Click to view full size">
+                                    <img src="/uploads/{{ img }}" 
+                                         style="height: 70px; width: 70px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd; cursor: pointer;">
+                                </a>
+                                <small class="text-muted d-block text-center mt-1" style="font-size: 10px;">{{ img }}</small>
+                            </div>
                             {% endfor %}
                         </div>
                     </div>
@@ -93,8 +108,41 @@
         {% endfor %}
     {% else %}
     <div class="card p-5 text-center">
-        <p class="text-muted mb-0">No pending consultations 🎉</p>
+        <div class="display-1">🎉</div>
+        <p class="text-muted mt-3">No pending consultations!</p>
     </div>
+    {% endif %}
+    
+    <hr class="my-5">
+    
+    <h3 class="mb-4 text-success">✅ Replied Consultations</h3>
+    {% if replied_consultations %}
+        {% for c in replied_consultations %}
+        <div class="card mb-3 p-3" style="border-left: 5px solid #4caf50;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">{{ c.patient_name }}</h6>
+                    <small class="text-muted">
+                        {% if c.created_at %}
+                            {% if c.created_at is string %}
+                                {{ c.created_at }}
+                            {% else %}
+                                {{ c.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% endif %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </small>
+                </div>
+                <div>
+                    <span class="badge bg-success">Replied</span>
+                    <a href="/doctor/reply/{{ c.id }}" class="btn btn-sm btn-outline-primary ms-2">View</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No replied consultations yet.</p>
     {% endif %}
 </div>
 {% endblock %}
