@@ -191,7 +191,17 @@
                             {% set has_prev = true %}
                             <div class="timeline-item {% if h.status == 'pending' %}pending{% endif %}">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <small class="fw-bold">{{ h.created_at[:10] }}</small>
+                                    <small class="fw-bold">
+                                        {% if h.created_at %}
+                                            {% if h.created_at is string %}
+                                                {{ h.created_at[:10] }}
+                                            {% else %}
+                                                {{ h.created_at.strftime('%Y-%m-%d') }}
+                                            {% endif %}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </small>
                                     <span class="badge {% if h.status == 'replied' %}bg-success{% else %}bg-warning{% endif %}" style="font-size: 10px;">
                                         {{ h.status }}
                                     </span>
